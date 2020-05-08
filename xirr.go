@@ -2,6 +2,8 @@
 // Use of this source code is governed by the license
 // that can be found in the LICENSE file.
 
+// Package xirr implements the XIRR function found in spreadsheet applications like
+// LibreOffice Calc.
 package xirr
 
 import (
@@ -13,13 +15,22 @@ import (
 
 const maxError = 1e-10
 
+// ErrInvalidPayments is returned by Compute calls when both positive and
+// negative payments are not provided.
 var ErrInvalidPayments = errors.New("negative and positive payments are required")
 
+// A Payment represents a payment made or received on a particular date.
 type Payment struct {
 	Date   time.Time
 	Amount float64
 }
 
+// Compute calculates the internal rate of return of a series of irregular
+// payments.
+//
+// It tries to identify the rate of return using Newton's method with an
+// initial guess of 0.1. If that does not provide a solution, it attempts with
+// guesses from -0.99 to 0.99 in increments of 0.1.
 func Compute(payments []Payment) (xirr float64, err error) {
 	if err := validatePayments(payments); err != nil {
 		return 0, err
