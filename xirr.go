@@ -30,14 +30,14 @@ type Payment struct {
 //
 // It tries to identify the rate of return using Newton's method with an
 // initial guess of 0.1. If that does not provide a solution, it attempts with
-// guesses from -0.99 to 0.99 in increments of 0.1.
+// guesses from -0.99 to 0.99 in increments of 0.01.
 func Compute(payments []Payment) (xirr float64, err error) {
 	if err := validatePayments(payments); err != nil {
 		return 0, err
 	}
 
 	rate := computeWithGuess(payments, 0.1)
-	for guess := -0.99; guess < 1.0 && (math.IsNaN(rate) || math.IsInf(rate, 0)); guess += 0.1 {
+	for guess := -0.99; guess < 1.0 && (math.IsNaN(rate) || math.IsInf(rate, 0)); guess += 0.01 {
 		rate = computeWithGuess(payments, guess)
 	}
 
