@@ -47,7 +47,7 @@ func Compute(payments []Payment) (xirr float64, err error) {
 func validatePayments(payments []Payment) error {
 	positive, negative := false, false
 	for _, p := range payments {
-		if p.Amount >= 0.0 {
+		if p.Amount > 0.0 {
 			positive = true
 		}
 		if p.Amount < 0.0 {
