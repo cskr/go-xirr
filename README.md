@@ -1,3 +1,5 @@
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/cskr/go-xirr)](https://pkg.go.dev/github.com/cskr/go-xirr)
+
 Implementation of the XIRR function found in spreadsheet applications like
 LibreOffice Calc, for Go. Read [the documentation][1] for further details.
 
