@@ -36,9 +36,15 @@ func Compute(payments []Payment) (xirr float64, err error) {
 		return 0, err
 	}
 
-	rate := computeWithGuess(payments, 0.1)
+	sorted := make([]Payment, len(payments))
+	copy(sorted, payments)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Date.Before(sorted[j].Date)
+	})
+
+	rate := computeWithGuess(sorted, 0.1)
 	for guess := -0.99; guess < 1.0 && (math.IsNaN(rate) || math.IsInf(rate, 0)); guess += 0.01 {
-		rate = computeWithGuess(payments, guess)
+		rate = computeWithGuess(sorted, guess)
 	}
 
 	return rate, nil
@@ -62,15 +68,9 @@ func validatePayments(payments []Payment) error {
 }
 
 func computeWithGuess(payments []Payment, guess float64) float64 {
-	sorted := make([]Payment, len(payments))
-	copy(sorted, payments)
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].Date.Before(sorted[j].Date)
-	})
-
 	r, e := guess, 1.0
 	for e > maxError {
-		r1 := r - xirr(sorted, r)/dxirr(sorted, r)
+		r1 := r - xirr(payments, r)/dxirr(payments, r)
 		e = math.Abs(r1 - r)
 		r = r1
 	}
