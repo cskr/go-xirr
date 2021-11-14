@@ -13,7 +13,10 @@ import (
 	"time"
 )
 
-const maxError = 1e-10
+const (
+	maxError = 1e-10
+	maxIter  = 50
+)
 
 // ErrInvalidPayments is returned by Compute calls when both positive and
 // negative payments are not provided.
@@ -30,7 +33,8 @@ type Payment struct {
 //
 // It tries to identify the rate of return using Newton's method with an
 // initial guess of 0.1. If that does not provide a solution, it attempts with
-// guesses from -0.99 to 0.99 in increments of 0.01.
+// guesses from -0.99 to 0.99 in increments of 0.01 and returns NaN if that
+// fails too.
 func Compute(payments []Payment) (xirr float64, err error) {
 	if err := validatePayments(payments); err != nil {
 		return 0, err
@@ -69,13 +73,17 @@ func validatePayments(payments []Payment) error {
 
 func computeWithGuess(payments []Payment, guess float64) float64 {
 	r, e := guess, 1.0
-	for e > maxError {
+	for i := 0; i < maxIter; i++ {
 		r1 := r - xirr(payments, r)/dxirr(payments, r)
 		e = math.Abs(r1 - r)
 		r = r1
+
+		if e <= maxError {
+			return r
+		}
 	}
 
-	return r
+	return math.NaN()
 }
 
 func xirr(payments []Payment, rate float64) float64 {

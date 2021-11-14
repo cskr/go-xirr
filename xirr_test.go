@@ -60,6 +60,24 @@ func TestSameSign(t *testing.T) {
 	}
 }
 
+func TestMaxIter(t *testing.T) {
+	rate, err := Compute([]Payment{
+		{parseDate("2020-10-19"), -10000},
+		{parseDate("2020-10-19"), 1000},
+		{parseDate("2020-10-19"), 300},
+		{parseDate("2020-10-19"), 4000},
+		{parseDate("2020-10-19"), 450},
+		{parseDate("2020-10-20"), 5000},
+		{parseDate("2020-10-21"), 250},
+	})
+	if err != nil {
+		t.Fatal("Error computing XIRR:", err)
+	}
+	if !math.IsNaN(rate) {
+		t.Fatalf("Expected %.10f, but was %.10f", math.NaN(), rate)
+	}
+}
+
 func loadPayments(file string) ([]Payment, error) {
 	f, err := os.Open("samples/" + file)
 	if err != nil {
