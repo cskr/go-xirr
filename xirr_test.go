@@ -21,6 +21,7 @@ func TestSamples(t *testing.T) {
 	}{
 		{"single_redemption.csv", 0.1361695793742},
 		{"random.csv", 0.6924974337277},
+		{"non_converging.csv", math.NaN()},
 	}
 
 	for _, c := range cases {
@@ -35,7 +36,14 @@ func TestSamples(t *testing.T) {
 				t.Fatal("Error computing XIRR:", err)
 			}
 
-			if math.Abs(rate-c.rate) >= maxError {
+			if math.IsNaN(c.rate) {
+				if !math.IsNaN(rate) {
+					t.Fatalf("Expected NaN, but was %.10f", rate)
+				}
+				return
+			}
+
+			if math.IsNaN(rate) || math.Abs(rate-c.rate) >= maxError {
 				t.Fatalf("Expected %.10f, but was %.10f", c.rate, rate)
 			}
 		})
@@ -57,24 +65,6 @@ func TestSameSign(t *testing.T) {
 	})
 	if err != ErrInvalidPayments {
 		t.Errorf("Invalid error for positive payments: %v", err)
-	}
-}
-
-func TestMaxIter(t *testing.T) {
-	rate, err := Compute([]Payment{
-		{parseDate("2020-10-19"), -10000},
-		{parseDate("2020-10-19"), 1000},
-		{parseDate("2020-10-19"), 300},
-		{parseDate("2020-10-19"), 4000},
-		{parseDate("2020-10-19"), 450},
-		{parseDate("2020-10-20"), 5000},
-		{parseDate("2020-10-21"), 250},
-	})
-	if err != nil {
-		t.Fatal("Error computing XIRR:", err)
-	}
-	if !math.IsNaN(rate) {
-		t.Fatalf("Expected %.10f, but was %.10f", math.NaN(), rate)
 	}
 }
 
